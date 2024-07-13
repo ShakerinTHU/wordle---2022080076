@@ -1,0 +1,7 @@
+test:
+  image: jiegec/rust:1.79-bookworm-tuna
+  script:
+    - curl -fsSL https://cli.moonbitlang.cn/install/unix.sh | bash -s 0.1.20240703+9f66d0525
+    - PATH=$HOME/.moon/bin:$PATH moon version --all
+    - cargo build
+    - PATH=$HOME/.moon/bin:$PATH cargo test -- --test-threads=1

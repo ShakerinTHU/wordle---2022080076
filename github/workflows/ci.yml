@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: moonbit
+  pull_request:
+    branches: moonbit
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 0
+  TEST_MOON: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - moonbit_version: "0.1.20240703+9f66d0525"
+            job_name: stable-test
+          - moonbit_version: ""
+            job_name: bleeding-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@1.77.0
+
+      - name: install MoonBit(Unix)
+        run: |
+          if [ -z "${{ matrix.moonbit_version }}" ]; then
+            curl -fsSL https://cli.moonbitlang.cn/install/unix.sh | bash
+          else
+            curl -fsSL https://cli.moonbitlang.cn/install/unix.sh | bash -s ${{ matrix.moonbit_version }}
+          fi
+          PATH=$HOME/.moon/bin:$PATH moon version --all
+
+      - name: Build
+        run: cargo build
+
+      - name: Test
+        run: PATH=$HOME/.moon/bin:$PATH cargo test -- --test-threads=1
+        
